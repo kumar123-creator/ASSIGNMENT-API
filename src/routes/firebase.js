@@ -1,6 +1,9 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
+import {  collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { GoogleAuthProvider, signInWithEmailAndPassword as signInWithEmailAndPasswordFirebase ,signOut as signOutFirebase } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -17,6 +20,18 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(firebaseApp);
+const googleAuthProvider = new GoogleAuthProvider();
+const signInWithEmailAndPassword = signInWithEmailAndPasswordFirebase;
+const signOut = signOutFirebase;
+// Export Firebase auth for use in your Svelte component
+export { auth };
+export {
+  
+    googleAuthProvider, // Export GoogleAuthProvider
+    signInWithEmailAndPassword,
+    signOut
+  };
 
 export async function createAssignment(assignmentData) {
   try {
