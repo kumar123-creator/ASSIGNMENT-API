@@ -12,6 +12,7 @@
 		newAssignment = { title: "", description: "" };
 		assignments = await getAssignments();
 	  }
+	  console.log("New assignment has added successfully");
 	}
   
 	async function editAssignment(id) {
@@ -20,6 +21,7 @@
 	  if (assignment) {
 		newAssignment = { ...assignment };
 	  }
+	  console.log("Assignment has edited successfully");
 	}
   
 	async function update() {
@@ -34,9 +36,11 @@
 	}
   
 	async function removeAssignment(id) {
-	  await deleteAssignment(id);
+	  { await deleteAssignment(id);
 	  assignments = await getAssignments();
 	}
+	console.log("Assignment has deleted successfully");
+}
   
 	onMount(async () => {
 	  assignments = await getAssignments();
@@ -128,6 +132,7 @@
 	label {
 	  font-weight: bold;
 	  margin-bottom: 5px;
+	  font-size: large;
 	}
   
 	input[type="text"] {
@@ -166,9 +171,12 @@
 	}
   
 	.add-button:hover,
-	.save-button:hover,
-	.cancel-button:hover {
+	.save-button:hover{
 	  background-color: #0056b3;
+	}
+  
+	.cancel-button:hover {
+	  background-color: darkred;
 	}
   
 	.assignment-list {
@@ -192,8 +200,9 @@
 	}
   
 	h3 {
-	  font-size: 18px;
-	  color: #333;
+	  font-size: 20px;
+	  color: black;
+	  font-weight: bolder;
 	}
   
 	.assignment-actions {
