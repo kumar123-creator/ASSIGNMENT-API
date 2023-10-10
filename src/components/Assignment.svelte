@@ -67,95 +67,45 @@
       showRegistrationPopup = false;
     }
     
+    // ...
+    
     async function handleRegistration(event) {
-  event.preventDefault();
-
-  try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      registerEmail,
-      registerPassword
-    );
-
-    // User is registered and signed in
-    const newUser = userCredential.user;
-    console.log("User registered and signed in:", newUser);
-
-    // Add the user's email to the "users" collection
-    await addUserToCollection(newUser.uid, registerEmail);
-
-    // Clear the registration form fields
-    registerEmail = "";
-    registerPassword = "";
-
-    // Fetch assignments and display them (you can move this code to a separate function)
-    assignments = await getAssignments();
-
-    // Close the registration popup after successful registration
-    closeRegistrationPopup();
-  } catch (error) {
-    console.error("Error registering:", error.code, error.message);
-  }
-}
-
-async function addUserToCollection(userId, email) {
-  try {
-    await addDoc(collection(db, "users"), {
-      userId,
-      email,
-    });
-  } catch (error) {
-    console.error("Error adding user to collection:", error);
-  }
-}
-
+      event.preventDefault();
     
-async function signInWithGoogle() {
-  try {
-    const userCredential = await signInWithPopup(auth, googleAuthProvider);
-
-    // User is signed in with Google
-    const googleUser = userCredential.user;
-    console.log("User signed in with Google:", googleUser);
-
-    // Check if the Google email exists in your Firebase Authentication system
-    const existingUser = await getUserByEmail(googleUser.email);
-
-    if (existingUser) {
-      // User exists, proceed with signing in
-      user = existingUser;
-      console.log("User exists in the system:", user);
-
-      // Fetch assignments and display them (you can move this code to a separate function)
-      assignments = await getAssignments();
-    } else {
-      // User doesn't exist in the system, sign them out and display an error message or take appropriate action
-      await signOut(auth);
-      console.error("User does not exist in the system.");
-    }
-  } catch (error) {
-    console.error("Error signing in with Google:", error);
-  }
-}
-
-
-async function getUserByEmail(email) {
-  try {
-    const usersCollection = collection(db, "users");
-    const querySnapshot = await getDocs(query(usersCollection, where("email", "==", email)));
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, registerEmail, registerPassword);
+        // User is registered and signed in
+        const user = userCredential.user;
+        console.log("User registered and signed in:", user);
     
-    if (!querySnapshot.empty) {
-      const userData = querySnapshot.docs[0].data();
-      return userData;
-    } else {
-      return null; // User not found
+        // Clear the registration form fields
+        registerEmail = "";
+        registerPassword = "";
+    
+        // Fetch assignments and display them (you can move this code to a separate function)
+        assignments = await getAssignments();
+        
+        // Close the registration popup after successful registration
+        closeRegistrationPopup();
+      } catch (error) {
+        console.error("Error registering:", error.code, error.message);
+      }
     }
-  } catch (error) {
-    console.error("Error getting user by email:", error);
-    return null;
-  }
-}
-
+    
+    async function signInWithGoogle() {
+      try {
+        const userCredential = await signInWithPopup(auth, googleAuthProvider);
+    
+        // User is signed in with Google
+        const user = userCredential.user;
+        console.log("User signed in with Google:", user);
+    
+        // Fetch assignments and display them (you can move this code to a separate function)
+        assignments = await getAssignments();
+      } catch (error) {
+        console.error("Error signing in with Google:", error);
+      }
+    }
     
     async function handleLogout() {
       try {
