@@ -18,7 +18,8 @@
     let registerEmail = "";
     let registerPassword = "";
     let showRegistrationPopup = false;
-    
+    let sessionTimer;
+
     
     
     
@@ -36,11 +37,16 @@
     const googleAuthProvider = new GoogleAuthProvider();
     const db = getFirestore(app);
     
-    // Listen for auth state changes
     onAuthStateChanged(auth, (authUser) => {
-      user = authUser;
-      // Update your UI based on whether the user is authenticated
-    });
+  user = authUser;
+  // Update your UI based on whether the user is authenticated
+
+  // Start the session timer if the user is authenticated
+  if (user) {
+    startSessionTimer();
+  }
+});
+
     async function handleLogin(event) {
       event.preventDefault();
     
@@ -92,6 +98,7 @@
       }
     }
     
+    
     async function signInWithGoogle() {
       try {
         const userCredential = await signInWithPopup(auth, googleAuthProvider);
@@ -108,20 +115,42 @@
     }
     
     async function handleLogout() {
-      try {
-        await signOut(auth);
-        // After successful logout, reset user state and assignments
-        user = null;
-        assignments = [];
-        // You can optionally redirect to the login page here
-        console.log("User Logout Successfully");
-      } 
-      
-      catch (error) {
-        console.error("Error logging out:", error);
-      }
-    }
+  try {
+    // Clear the session timer
+    clearTimeout(sessionTimer);
+
+    await signOut(auth);
+    // After successful logout, reset user state and assignments
+    user = null;
+    assignments = [];
+    // You can optionally redirect to the login page here
+    console.log("User Logout Successfully");
+  } catch (error) {
+    console.error("Error logging out:", error);
+  }
+}
+
     
+    function startSessionTimer() {
+  // Clear any existing timer (to handle user activity)
+  clearTimeout(sessionTimer);
+
+  // Set a new timer for 30 minutes (30 minutes * 60 seconds * 1000 milliseconds)
+  sessionTimer = setTimeout(() => {
+    // Automatically log the user out after the session timeout
+    handleLogout();
+  }, 30 * 60 * 1000); // 30 minutes in milliseconds
+}
+onMount(async () => {
+  if (user) {
+    assignments = await getAssignments();
+
+    // Add event listeners for user activity
+    window.addEventListener('mousemove', startSessionTimer);
+    window.addEventListener('keydown', startSessionTimer);
+  }
+});
+
     async function addAssignment() {
       if (user) {
         const assignmentId = await createAssignment({
