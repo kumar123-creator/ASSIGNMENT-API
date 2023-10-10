@@ -25,7 +25,9 @@ const auth = getAuth(firebaseApp);
 const googleAuthProvider = new GoogleAuthProvider();
 const signInWithEmailAndPassword = signInWithEmailAndPasswordFirebase;
 const signOut = signOutFirebase;
-// Export Firebase auth for use in your Svelte component
+const registeredEmailsCollection = collection(db, "registered_emails");
+export { registeredEmailsCollection };
+
 export { auth };
 export {
   
