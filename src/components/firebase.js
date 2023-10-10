@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { query, where} from "firebase/firestore";
 import {  collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { GoogleAuthProvider, signInWithEmailAndPassword as signInWithEmailAndPasswordFirebase ,signOut as signOutFirebase } from "firebase/auth";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -44,14 +45,35 @@ export async function createAssignment(assignmentData) {
 }
 
 export async function getAssignments() {
-  const querySnapshot = await getDocs(collection(db, "assignments"));
-  const assignments = [];
-  querySnapshot.forEach((doc) => {
-    assignments.push({ id: doc.id, ...doc.data() });
-  });
-  return assignments;
-}
-
+    const db = getFirestore();
+    const assignmentsCollection = collection(db, "assignments");
+  
+    // Get the currently authenticated user's ID (assuming the user is logged in)
+    const userId = user ? user.uid : null;
+  
+    if (!userId) {
+      // User is not authenticated, return an empty array or handle it as needed
+      return [];
+    }
+  
+    // Create a Firestore query to fetch assignments of the current user
+    const q = query(assignmentsCollection, where("createdBy", "==", userId));
+  
+    const querySnapshot = await getDocs(q);
+    const assignments = [];
+  
+    querySnapshot.forEach((doc) => {
+      const assignmentData = doc.data();
+      assignments.push({
+        id: doc.id,
+        title: assignmentData.title,
+        description: assignmentData.description,
+      });
+    });
+  
+    return assignments;
+  }
+  
 export async function deleteAssignment(assignmentId) {
   try {
     await deleteDoc(doc(db, "assignments", assignmentId));
@@ -68,4 +90,9 @@ export async function updateAssignment(assignmentId, updatedData) {
   }
 }
 
+export async function checkIfEmailExists(email) {
+    const q = query(collection(db, "users"), where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
+  }
 
