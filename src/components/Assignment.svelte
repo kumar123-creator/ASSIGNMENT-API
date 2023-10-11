@@ -74,47 +74,71 @@
     }
     
     // ...
-    
     async function handleRegistration(event) {
-      event.preventDefault();
-    
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, registerEmail, registerPassword);
-        // User is registered and signed in
-        const user = userCredential.user;
-        console.log("User registered and signed in:", user);
-    
-        // Clear the registration form fields
-        registerEmail = "";
-        registerPassword = "";
-    
-        // Fetch assignments and display them (you can move this code to a separate function)
-        assignments = await getAssignments();
-        
-        // Close the registration popup after successful registration
-        closeRegistrationPopup();
-      } catch (error) {
-        console.error("Error registering:", error.code, error.message);
-      }
+  event.preventDefault();
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, registerEmail, registerPassword);
+    // User is registered and signed in
+    const user = userCredential.user;
+    console.log("User registered and signed in:", user);
+
+    // Store the registered email in a separate collection
+    await storeRegisteredEmail(registerEmail);
+
+    // Clear the registration form fields
+    registerEmail = "";
+    registerPassword = "";
+
+    // Fetch assignments and display them (you can move this code to a separate function)
+    assignments = await getAssignments();
+
+    // Close the registration popup after successful registration
+    closeRegistrationPopup();
+  } catch (error) {
+    console.error("Error registering:", error.code, error.message);
+  }
+}
+
+async function storeRegisteredEmail(email) {
+  // Use Firebase Firestore to store the registered email in a separate collection
+  try {
+    await addDoc(collection(db, "registered_emails"), { email });
+  } catch (error) {
+    console.error("Error storing registered email:", error);
+  }
+}
+
+async function signInWithGoogle() {
+  try {
+    const userCredential = await signInWithPopup(auth, googleAuthProvider);
+
+    // User is signed in with Google
+    const user = userCredential.user;
+    console.log("User signed in with Google:", user);
+
+    // Check if the Google email matches any registered email
+    const googleEmail = user.email;
+
+    // Fetch the list of registered emails from Firebase
+    const registeredEmailsSnapshot = await getDocs(collection(db, "registered_emails"));
+    const registeredEmails = registeredEmailsSnapshot.docs.map((doc) => doc.data().email);
+
+    if (registeredEmails.includes(googleEmail)) {
+      // Email is registered, allow access and fetch assignments
+      assignments = await getAssignments();
+    } else {
+      // Email is not registered, sign the user out
+      await signOut(auth);
+      console.log("User signed out because the Google email is not registered.");
     }
+  } catch (error) {
+    console.error("Error signing in with Google:", error);
+  }
+}
+
     
-    
-    async function signInWithGoogle() {
-      try {
-        const userCredential = await signInWithPopup(auth, googleAuthProvider);
-    
-        // User is signed in with Google
-        const user = userCredential.user;
-        console.log("User signed in with Google:", user);
-    
-        // Fetch assignments and display them (you can move this code to a separate function)
-        assignments = await getAssignments();
-      } catch (error) {
-        console.error("Error signing in with Google:", error);
-      }
-    }
-    
-    async function handleLogout() {
+     async function handleLogout() {
   try {
     // Clear the session timer
     clearTimeout(sessionTimer);

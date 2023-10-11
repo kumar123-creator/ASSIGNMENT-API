@@ -92,9 +92,3 @@ export async function updateAssignment(assignmentId, updatedData) {
   }
 }
 
-export async function checkIfEmailExists(email) {
-    const q = query(collection(db, "users"), where("email", "==", email));
-    const querySnapshot = await getDocs(q);
-    return !querySnapshot.empty;
-  }
-
